@@ -19,8 +19,13 @@ def validate_date(date_text):
     return date_object
 
 
+EMAIL_RE = re.compile(
+    r'^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$'
+)
+
+
 def validate_email(email):
-    match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', email)
+    match = re.match(EMAIL_RE, email)
     if match:
         return True
     else:
