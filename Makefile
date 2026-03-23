@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: init clean build test deploy
 
 init:
 	pipenv install --dev
