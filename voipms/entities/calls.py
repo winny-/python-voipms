@@ -17,7 +17,7 @@ class Calls(BaseApi):
         Initialize the endpoint
         """
         super(Calls, self).__init__(*args, **kwargs)
-        self.endoint = 'calls'
+        self.endpoint = 'calls'
         self.delete = CallsDelete(self)
         self.get = CallsGet(self)
         self.send = CallsSend(self)

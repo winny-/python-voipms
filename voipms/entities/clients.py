@@ -16,7 +16,7 @@ class Clients(BaseApi):
         Initialize the endpoint
         """
         super(Clients, self).__init__(*args, **kwargs)
-        self.endoint = 'clients'
+        self.endpoint = 'clients'
         self.add = ClientsAdd(self)
         self.get = ClientsGet(self)
         self.set = ClientsSet(self)

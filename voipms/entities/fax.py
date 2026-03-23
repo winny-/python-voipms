@@ -24,7 +24,7 @@ class Fax(BaseApi):
         Initialize the endpoint
         """
         super(Fax, self).__init__(*args, **kwargs)
-        self.endoint = 'fax'
+        self.endpoint = 'fax'
         self.cancel = FaxCancel(self)
         self.connect = FaxConnect(self)
         self.delete = FaxDelete(self)

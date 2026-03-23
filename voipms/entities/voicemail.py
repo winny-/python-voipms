@@ -20,7 +20,7 @@ class Voicemail(BaseApi):
         Initialize the endpoint
         """
         super(Voicemail, self).__init__(*args, **kwargs)
-        self.endoint = 'voicemail'
+        self.endpoint = 'voicemail'
         self.create = VoicemailCreate(self)
         self.delete = VoicemailDelete(self)
         self.get = VoicemailGet(self)

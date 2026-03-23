@@ -13,7 +13,7 @@ class E911(BaseApi):
         Initialize the endpoint
         """
         super(E911, self).__init__(*args, **kwargs)
-        self.endoint = 'e911'
+        self.endpoint = 'e911'
 
     def address_types(self, address_type=None):
         """

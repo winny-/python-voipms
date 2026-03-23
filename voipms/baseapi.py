@@ -1,3 +1,6 @@
+from warnings import deprecated
+
+
 class BaseApi(object):
     """
     Simple class to buid path for entities
@@ -11,3 +14,13 @@ class BaseApi(object):
         """
         super(BaseApi, self).__init__()
         self._voipms_client = voipms_client
+
+    @property
+    @deprecated('endoint renamed to endpoint')
+    def endoint(self):
+        return self.endpoint
+
+    @endoint.setter
+    @deprecated('endoint renamed to endpoint')
+    def endoint(self, value):
+        self.endpoint = value

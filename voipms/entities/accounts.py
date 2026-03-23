@@ -18,7 +18,7 @@ class Accounts(BaseApi):
         Initialize the endpoint
         """
         super(Accounts, self).__init__(*args, **kwargs)
-        self.endoint = 'accounts'
+        self.endpoint = 'accounts'
         self.add = AccountsAdd(self)
         self.create = AccountsCreate(self)
         self.delete = AccountsDelete(self)

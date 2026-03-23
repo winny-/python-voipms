@@ -24,7 +24,7 @@ class Dids(BaseApi):
         Initialize the endpoint
         """
         super(Dids, self).__init__(*args, **kwargs)
-        self.endoint = 'dids'
+        self.endpoint = 'dids'
         self.back_order = DidsBackOrder(self)
         self.cancel = DidsCancel(self)
         self.connect = DidsConnect(self)

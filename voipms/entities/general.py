@@ -14,5 +14,5 @@ class General(BaseApi):
         Initialize the endpoint
         """
         super(General, self).__init__(*args, **kwargs)
-        self.endoint = 'general'
+        self.endpoint = 'general'
         self.get = GeneralGet(self)

@@ -15,6 +15,6 @@ class LNP(BaseApi):
         Initialize the endpoint
         """
         super(LNP, self).__init__(*args, **kwargs)
-        self.endoint = 'lnp'
+        self.endpoint = 'lnp'
         self.add = LNPAdd(self)
         self.get = LNPGet(self)
