@@ -86,10 +86,6 @@ class FaxConnect(BaseApi):
                 raise ValueError("If set to True, the monthly value will not be charged after Connect (needs to be bool)")
             parameters["dont_charge_monthly"] = convert_bool(kwargs.pop("dont_charge_monthly"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)

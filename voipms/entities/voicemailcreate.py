@@ -134,10 +134,6 @@ class VoicemailCreate(BaseApi):
                 raise ValueError("Recording for the Unavailable Message needs to be an int (values from dids.get_recordings)")
             parameters["unavailable_message_recording"] = kwargs.pop("unavailable_message_recording")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)

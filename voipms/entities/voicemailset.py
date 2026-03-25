@@ -81,7 +81,6 @@ class VoicemailSet(BaseApi):
         if "unavailable_message_recording" in kwargs:
             parameters["unavailable_message_recording"] = check_param("unavailable_message_recording", int, kwargs.pop("unavailable_message_recording"), 'See dids.get_recordings')
 
-        if kwargs:
-            raise VoipMsValidationError(f'Parameters not allowed: {" ".join(kwargs.keys())}')
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)

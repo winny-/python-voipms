@@ -79,6 +79,13 @@ def validate_email(email):
     return email
 
 
+def refuse_other_kwargs(kwargs):
+    """Raise an exception when kwargs is not empty."""
+    if kwargs:
+        strings = (str(key) for key in kwargs.keys())
+        raise VoipMsValidationError(f'Parameters not allowed {" ".join(strings)}')
+
+
 def order(**kwargs):
 
     parameters = {}
@@ -144,11 +151,7 @@ def order(**kwargs):
     grab('minute', float, '0.03')
     grab('test', bool, 'True/False', validator=convert_bool)
 
-    if kwargs:
-        not_allowed_parameters = ""
-        for key, value in kwargs.items():
-            not_allowed_parameters += key + " "
-        raise VoipMsValidationError("Parameters not allowed: {}".format(not_allowed_parameters))
+    refuse_other_kwargs(kwargs)
 
     # Verify again if all required fields present
     for field in required_fields[method]:

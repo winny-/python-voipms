@@ -183,10 +183,6 @@ class AccountsSet(BaseApi):
                 raise ValueError("True if you want to charge Package Setup Fee after Save")
             parameters["reseller_chargesetup"] = kwargs.pop("reseller_chargesetup")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)

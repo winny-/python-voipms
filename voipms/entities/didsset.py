@@ -78,11 +78,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Caller ID Override for the callback needs to be an int")
             parameters["callerid_number"] = kwargs.pop("callerid_number")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -187,11 +183,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Note for the Caller ID Filtering needs to be a str")
             parameters["note"] = kwargs.pop("note")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -520,11 +512,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Caller ID Override for the DISA needs to be an int")
             parameters["callerid_override"] = kwargs.pop("callerid_override")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -584,11 +572,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Pause (seconds) when call is answered before sending digits needs to be a float (Example: 1.5 / Values: 0 to 10 in increments of 0.5)")
             parameters["pause"] = kwargs.pop("pause")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -701,11 +685,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Caller ID Override when dialing via Speed Dial needs to be an int")
             parameters["callerid"] = kwargs.pop("callerid")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -1048,11 +1028,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Same as routingleaveempty, except that there were still queue members, but all were status unavailable needs to be a str")
             parameters["fail_over_routing_leave_unavail"] = kwargs.pop("fail_over_routing_leave_unavail")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -1156,11 +1132,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Code for Language needs to be a str (Values from general.get_languages)")
             parameters["language"] = kwargs.pop("language")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -1213,11 +1185,7 @@ class DidsSet(BaseApi):
                 raise ValueError("CallerID Override for the SIP URI needs to be a str")
             parameters["callerid_override"] = kwargs.pop("callerid_override")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -1311,11 +1279,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Enable URL callback Retry needs to be a bool (Values:True=Enable / False=Disable)")
             parameters["url_callback_retry"] = convert_bool(kwargs.pop("url_callback_retry"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -1366,11 +1330,7 @@ class DidsSet(BaseApi):
                 raise ValueError("Static Member Routing to receive calls needs to be a str (You can get all sub accounts using the accounts.get_sub_accounts function)")
             parameters["account"] = kwargs.pop("account")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 

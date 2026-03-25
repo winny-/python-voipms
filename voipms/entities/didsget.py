@@ -429,11 +429,7 @@ class DidsGet(BaseApi):
                 raise ValueError("Return the list of media attachments as an Array if the value is 1 as a JSON Object if the value is 0 (Default: 0)")
             parameters["media_as_array"] = convert_bool(kwargs.pop("media_as_array"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -516,11 +512,7 @@ class DidsGet(BaseApi):
                 raise ValueError("Filter to recive all SMSs and MMSs, 1 recive all SMS and MMS, 0 if only need SMS, important: the sms ID must be 0")
             parameters["all_messages"] = convert_bool(kwargs.pop("all_messages"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -855,11 +847,7 @@ class DidsGet(BaseApi):
                 raise ValueError("Filter to recive all SMSs and MMSs, 1 recive all SMS and MMS, 0 if only need SMS, important: the sms ID must be 0")
             parameters["all_messages"] = convert_bool(kwargs.pop("all_messages"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 

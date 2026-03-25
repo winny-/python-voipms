@@ -81,11 +81,7 @@ class CallsGet(BaseApi):
                 raise ValueError("Filter CDR by Account needs to be an int (Values from calls.call_accounts)")
             parameters["account"] = kwargs.pop("account")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         if client:
             if not isinstance(client, int):

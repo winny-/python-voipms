@@ -1,4 +1,5 @@
 from warnings import deprecated
+from .helpers import refuse_other_kwargs
 
 
 class BaseApi(object):
@@ -14,6 +15,13 @@ class BaseApi(object):
         """
         super(BaseApi, self).__init__()
         self._voipms_client = voipms_client
+
+    @staticmethod
+    def _refuse_other_kwargs(cls, kwargs):
+        """Convenience staticmethod toensure kwargs is empty.
+
+        If not empty, raise a VoipMSValidationError."""
+        refuse_other_kwargs(kwargs)
 
     @property
     @deprecated('endoint renamed to endpoint')

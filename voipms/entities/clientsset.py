@@ -123,11 +123,7 @@ class ClientsSet(BaseApi):
                 raise ValueError("Balance Management for Client (Values from clients.get_balance_management)")
             parameters["balance_management"] = kwargs.pop("balance_management")
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 

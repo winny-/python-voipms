@@ -53,11 +53,7 @@ class FaxSet(BaseApi):
             else:
                 parameters["test"] = convert_bool(kwargs.pop("test"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -125,11 +121,7 @@ class FaxSet(BaseApi):
             else:
                 parameters["test"] = convert_bool(kwargs.pop("test"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -205,11 +197,7 @@ class FaxSet(BaseApi):
             else:
                 parameters["test"] = convert_bool(kwargs.pop("test"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -264,11 +252,7 @@ class FaxSet(BaseApi):
             else:
                 parameters["test"] = convert_bool(kwargs.pop("test"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
 
@@ -320,10 +304,6 @@ class FaxSet(BaseApi):
             else:
                 parameters["test"] = convert_bool(kwargs.pop("test"))
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        self._refuse_other_kwargs(kwargs)
 
         return self._voipms_client._get(method, parameters)
