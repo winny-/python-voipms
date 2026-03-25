@@ -1,8 +1,7 @@
 import datetime
+import inspect
 import re
 from functools import wraps
-from dataclasses import dataclass
-from collections.abc import Callable
 
 
 def convert_bool(boolean):
@@ -47,24 +46,33 @@ def check_param(name, type_, value, example=None, validator=None):
         return value
 
 
-@dataclass
-class Parameter():
-    name: str
-    type_: type
-    description: str
-    example: str | None = None
-    validator: Callable[[any], any] | None = None
+def parameter(name, type, doc, validator=None, required=False):
+    def outer(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            sig = inspect.signature(func)
+            bound = sig.bind(*args, **kwargs)
+            if name in bound.arguments:
+                value = bound.arguments[name]
+            elif required:
+                raise VoipMsValidationError(f'Parameter {name} is required')
+            else:
+                return func(*args, **kwargs)
 
-
-PARAMETERS = {}
-def register_parameter(name, type_, description, example=None, validator=None):
-    if name in PARAMETERS:
-        raise ValueError('Parameter with name {name} is already registered')
-    PARAMETERS[name] = Parameter(name=name, type_=type_,
-                                 description=description, example=example,
-                                 validator=validator)
-# TODO create the parameter table and use in validation
-rp = register_parameter
+            if not isinstance(value, type):
+                raise VoipMsTypeError(f'Found parameter {name} with type {type.__name__}, got {value} (type {value.__class__.__name__})')
+            newval = validator(value) if validator is not None else value
+            kwargs[name] = newval
+            return func(*args, **kwargs)
+        docstring_addition = f'\n:param {name}: {"[Required] " if required else ""}{doc}\n:type {name}: :py:class:`{type.__name__}`'
+        match re.match('^\n?([^\n]+\n)', inner.__doc__, re.M):
+            case re.Match() as m:
+                before, after = inner.__doc__[:m.end()], inner.__doc__[m.end():]
+                inner.__doc__ = ''.join([before, docstring_addition, '\n', after])
+            case None:
+                inner.__doc__ += docstring_addition
+        return inner
+    return outer
 
 
 EMAIL_RE = re.compile(
@@ -77,6 +85,17 @@ def validate_email(email):
     if not match:
         raise VoipMsValidationError(f'Bad email "{email}"')
     return email
+
+
+def validate_maxlength(maxlen: int):
+    @wraps(validate_maxlength)
+    def inner(value):
+        try:
+            length = len(value)
+            if length > maxlen:
+                raise VoipMsValidationError(f'len({repr(value)}) > {repr(maxlen)}')
+        except TypeError as e:
+            raise VoipMsTypeError(e)
 
 
 def refuse_other_kwargs(kwargs):

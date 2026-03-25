@@ -17,8 +17,8 @@ class BaseApi(object):
         self._voipms_client = voipms_client
 
     @staticmethod
-    def _refuse_other_kwargs(cls, kwargs):
-        """Convenience staticmethod toensure kwargs is empty.
+    def _refuse_other_kwargs(kwargs):
+        """Convenience staticmethod to ensure kwargs is empty.
 
         If not empty, raise a VoipMSValidationError."""
         refuse_other_kwargs(kwargs)

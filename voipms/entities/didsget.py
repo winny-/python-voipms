@@ -5,7 +5,7 @@ The Dids API endpoint get
 Documentation: https://voip.ms/m/apidocs.php
 """
 from voipms.baseapi import BaseApi
-from voipms.helpers import validate_date, convert_bool, VoipMsTypeError
+from voipms.helpers import validate_date, convert_bool, VoipMsTypeError, parameter
 
 
 class DidsGet(BaseApi):
@@ -770,29 +770,18 @@ class DidsGet(BaseApi):
 
         return self._voipms_client._get(method, parameters)
 
+    @parameter('sms', int, 'ID for a specific SMS (Example: 5853)')
+    @parameter('date_from', str, 'Start Date for Filtering SMSs (Example: "2014-03-30").  Defaults to today.', validator=validate_date)
+    @parameter('date_to', str, 'End Date for Filtering SMSs (Example: "2014-03-30").  Defaults to today.', validator=validate_date)
+    @parameter('sms_type', bool, 'Filter SMSs by Type (Boolean: True = received / False = sent)', validator=convert_bool)
+    @parameter('did', int, 'DID number for Filtering SMSs (Example: 5551234567)')
+    @parameter('contact', int, 'Contact number for Filtering SMSs (Example: 5551234567)')
+    @parameter('limit', int, 'Number of records to be displayed (Example: 20).  Defaults to 50.')
+    @parameter('timezone', int, 'Adjust time of SMSs according to Timezome (Numeric: -12 to 13)')
+    @parameter('all_messages', bool, "Filter to recive all SMSs and MMSs, 1 recive all SMS and MMS, 0 if only need SMS, important: the sms ID must be 0", validator=convert_bool)
     def sms(self, **kwargs):
         """
         Retrieves a list of SMS messages by: date range, sms type, DID number, and contact
-
-        :param sms: ID for a specific SMS (Example: 5853)
-        :type sms: :py:class:`int`
-        :param date_from: Start Date for Filtering SMSs (Example: '2014-03-30')
-                     - Default value: Today
-        :type date_from: :py:class:`str`
-        :param date_to: End Date for Filtering SMSs (Example: '2014-03-30')
-                     - Default value: Today
-        :type date_to: :py:class:`str`
-        :param sms_type: Filter SMSs by Type (Boolean: True = received / False = sent)
-        :type sms_type: :py:class:`bool`
-        :param did: DID number for Filtering SMSs (Example: 5551234567)
-        :type did: :py:class:`int`
-        :param contact: Contact number for Filtering SMSs (Example: 5551234567)
-        :type contact: :py:class:`int`
-        :param limit: Number of records to be displayed (Example: 20)
-                       - Default value: 50
-        :type limit: :py:class:`int`
-        :param timezone: Adjust time of SMSs according to Timezome (Numeric: -12 to 13)
-        :type timezone: :py:class:`int`
 
         :returns: :py:class:`dict`
         """
@@ -800,52 +789,19 @@ class DidsGet(BaseApi):
 
         parameters = {}
 
-        if "sms" in kwargs:
-            if not isinstance(kwargs["sms"], int):
-                raise ValueError("ID for a specific SMS needs to be an int (Example: 5853)")
-            parameters["sms"] = kwargs.pop("sms")
+        def grab(name, rename=None):
+            if name in kwargs:
+                parameters[name if rename is None else rename] = kwargs.pop(name)
 
-        if "date_from" in kwargs:
-            if not isinstance(kwargs["date_from"], str):
-                raise ValueError("Start Date for Filtering SMSs needs to be a str (Example: '2014-03-30')")
-            validate_date(kwargs["date_from"])
-            parameters["from"] = kwargs.pop("date_from")
-
-        if "date_to" in kwargs:
-            if not isinstance(kwargs["date_to"], str):
-                raise ValueError("End Date for Filtering SMSs needs to be a str (Example: '2014-03-30')")
-            validate_date(kwargs["date_to"])
-            parameters["to"] = kwargs.pop("date_to")
-
-        if "sms_type" in kwargs:
-            if not isinstance(kwargs["sms_type"], bool):
-                raise ValueError("Filter SMSs by Type needs to be a bool (Boolean: True = received / False = sent)")
-            parameters["type"] = convert_bool(kwargs.pop("sms_type"))
-
-        if "did" in kwargs:
-            if not isinstance(kwargs["did"], int):
-                raise ValueError("DID number for Filtering SMSs needs to be an int (Example: 5551234567)")
-            parameters["did"] = kwargs.pop("did")
-
-        if "contact" in kwargs:
-            if not isinstance(kwargs["contact"], int):
-                raise ValueError("Contact number for Filtering SMSs needs to be an int (Example: 5551234567)")
-            parameters["contact"] = kwargs.pop("contact")
-
-        if "limit" in kwargs:
-            if not isinstance(kwargs["limit"], int):
-                raise ValueError("Number of records to be displayed needs to be an int (Example: 20)")
-            parameters["limit"] = kwargs.pop("limit")
-
-        if "timezone" in kwargs:
-            if not isinstance(kwargs["timezone"], int):
-                raise ValueError("Adjust time of SMSs according to Timezome needs to be an int (Numeric: -12 to 13)")
-            parameters["timezone"] = kwargs.pop("timezone")
-
-        if "all_messages" in kwargs:
-            if not isinstance(kwargs["all_messages"], bool):
-                raise ValueError("Filter to recive all SMSs and MMSs, 1 recive all SMS and MMS, 0 if only need SMS, important: the sms ID must be 0")
-            parameters["all_messages"] = convert_bool(kwargs.pop("all_messages"))
+        grab('sms')
+        grab('date_from', 'from')
+        grab('date_to', 'to')
+        grab('type')
+        grab('did')
+        grab('contact')
+        grab('limit')
+        grab('timezone')
+        grab('all_messages')
 
         self._refuse_other_kwargs(kwargs)
 
@@ -861,34 +817,23 @@ class DidsGet(BaseApi):
 
         return self._voipms_client._get(method)
 
+    @parameter('queue', int, 'ID for a specific Queue (Example: 4136)', required=True)
+    @parameter('member', int, 'ID for a specific Static Member (Example: 163).  The Member must belong to the queue provided')
     def static_members(self, queue, member=None):
         """
         Retrieves a list of Static Members from a queue if no additional parameter is provided
-
-        - Retrieves a specific Static Member from a queue if Queue ID and Member ID are provided
-
-        :param state: [Required] ID for a specific Queue (Example: 4136)
-        :type state: :py:class:`int`
-
-        :param ratecenter: ID for a specific Static Member (Example: 163)
-                            - The Member must belong to the queue provided
-        :type ratecenter: :py:class:`int`
+        Otherwise retrieves a specific Static Member from a queue if Queue ID and Member ID are provided
 
         :returns: :py:class:`dict`
         """
         method = "getStaticMembers"
 
-        if not isinstance(queue, int):
-            raise ValueError("ID for a specific Queue needs to be an int (Example: 4136)")
         parameters = {
             "queue": queue
         }
 
-        if member:
-            if not isinstance(member, str):
-                raise ValueError("ID for a specific Static Member needs to be an int (Example: 163) and Member must belong to the queue provided")
-            else:
-                parameters["member"] = member
+        if member is not None:
+            parameters["member"] = member
 
         return self._voipms_client._get(method, parameters)
 
