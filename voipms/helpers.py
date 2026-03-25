@@ -1,10 +1,13 @@
 import datetime
 import re
+from functools import wraps
+from dataclasses import dataclass
+from collections.abc import Callable
 
 
 def convert_bool(boolean):
     if not isinstance(boolean, bool):
-        raise ValueError("Needs to be a bool")
+        raise VoipMsTypeError("Needs to be a bool")
     if boolean:
         return "1"
     else:
@@ -15,8 +18,53 @@ def validate_date(date_text):
     try:
         date_object = datetime.datetime.strptime(date_text, '%Y-%m-%d')
     except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+        raise VoipMsValidationError("Incorrect data format, should be YYYY-MM-DD")
     return date_object
+
+
+def validate_choice(choice1, *choices):
+    choices = (choice1, *choices)
+
+    @wraps(validate_choice)
+    def inner(value):
+        if value not in choices:
+            raise VoipMsValidationError()
+        return value
+
+
+validate_yesno = validate_choice('yes', 'no')
+
+
+def check_param(name, type_, value, example=None, validator=None):
+    if not isinstance(value, type_):
+        suffix = ''
+        if example is not None:
+            suffix = f' (example: {example})'
+        raise VoipMsTypeError(f'Expected parameter {name} with type {type_.__class__.__name__}, got {value} {value.__type__.__name__}{suffix}')
+    if validator is not None:
+        return validator(value)
+    else:
+        return value
+
+
+@dataclass
+class Parameter():
+    name: str
+    type_: type
+    description: str
+    example: str | None = None
+    validator: Callable[[any], any] | None = None
+
+
+PARAMETERS = {}
+def register_parameter(name, type_, description, example=None, validator=None):
+    if name in PARAMETERS:
+        raise ValueError('Parameter with name {name} is already registered')
+    PARAMETERS[name] = Parameter(name=name, type_=type_,
+                                 description=description, example=example,
+                                 validator=validator)
+# TODO create the parameter table and use in validation
+rp = register_parameter
 
 
 EMAIL_RE = re.compile(
@@ -26,15 +74,21 @@ EMAIL_RE = re.compile(
 
 def validate_email(email):
     match = re.match(EMAIL_RE, email)
-    if match:
-        return True
-    else:
-        return False
+    if not match:
+        raise VoipMsValidationError(f'Bad email "{email}"')
+    return email
 
 
 def order(**kwargs):
 
     parameters = {}
+
+    def grab(name, type_, **kwargs2):
+        if name not in kwargs:
+            return
+        value = kwargs.pop(name)
+        parameters[name] = check_param(name, type_, value, **kwargs2)
+
 
     international_fields = ("location_id", "quantity", "routing", "pop", "dialtime", "cnam")
     did_fields = ("did", "routing", "pop", "dialtime", "cnam", "billing_type")
@@ -53,147 +107,53 @@ def order(**kwargs):
     # Minimize possibility of code injection
     if "method" in kwargs:
         if not isinstance(kwargs["method"], str):
-            raise ValueError("method needs to be a str")
+            raise VoipMsTypeError("method needs to be a str")
         else:
             if kwargs["method"] not in required_fields:
-                raise ValueError("This method is not allowed")
+                raise VoipMsValidationError("This method is not allowed")
         method = kwargs.pop("method")
     else:
         raise ValueError("A method needs to be specified")
 
-    if "did" in kwargs:
-        if not isinstance(kwargs["did"], int):
-            raise ValueError("DID to be Ordered needs to be an int (Example: 5552223333)")
-        parameters["did"] = kwargs.pop("did")
+    grab('did', int, '5552223333')
+    grab('digits', int, '001')
+    grab('location_id', int, 'See dids.get_dids_international_geographic')
+    grab('quantity', int, '2')
+    grab('state', str, 'See dids.get_states')
+    grab('province', str, 'See dids.get_provinces')
+    if method == 'backOrderDIDUSA':
+        grab('ratecenter', str, 'See dids.get_rate_centers_usa')
+    else:
+        grab('ratecenter', str, 'See dids.get_rate_centers_can')
+    grab('routing', str, 'See accounts.get_routes')
+    grab('failover_busy', str, 'FIXME')
+    grab('failover_unreachable', str, 'FIXME')
+    grab('failover_noanswer', str, 'FIXME')
+    grab('voicemail', int, '101')
+    grab('pop', int, '5')
+    grab('dialtime', int, '60 (seconds)')
+    grab('cnam', bool, 'True/False', validator=convert_bool)
+    grab('carrier', int, 'See dids.get_carriers')
+    grab('callerid_prefix', str, 'FIXME')
+    grab('note', str, 'FIXME')
+    grab('billing_type', int, '1 = Per Minute, 2 = Flat')
+    grab('account', str, '"100001_VoIP"')
+    # FIXME Fees should be a decimal type, not float.
+    grab('monthly', float, '3.50')
+    grab('setup', float, '1.99')
+    grab('minute', float, '0.03')
+    grab('test', bool, 'True/False', validator=convert_bool)
 
-    if "digits" in kwargs:
-        if not isinstance(kwargs["digits"], int):
-            raise ValueError("Three Digits for the new Virtual DID needs to be an int (Example: 001)")
-        parameters["digits"] = kwargs.pop("digits")
-
-    if "location_id" in kwargs:
-        if not isinstance(kwargs["location_id"], int):
-            raise ValueError("ID for a specific International Location needs to be an int (Values from dids.get_dids_international_geographic)")
-        parameters["location_id"] = kwargs.pop("location_id")
-
-    if "quantity" in kwargs:
-        if not isinstance(kwargs["quantity"], int):
-            raise ValueError("Number of dids to be purchased needs to be an int (Example: 2)")
-        parameters["quantity"] = kwargs.pop("quantity")
-
-    if "state" in kwargs:
-        if not isinstance(kwargs["state"], str):
-            raise ValueError("USA State needs to be a str (values from dids.get_states)")
-        parameters["state"] = kwargs.pop("state")
-
-    if "province" in kwargs:
-        if not isinstance(kwargs["province"], str):
-            raise ValueError("Canadian Province needs to be a str (values from dids.get_provinces)")
-        parameters["province"] = kwargs.pop("province")
-
-    if "ratecenter" in kwargs:
-        if not isinstance(kwargs["ratecenter"], str):
-            if method == "backOrderDIDUSA":
-                raise ValueError("USA Ratecenter needs to be a str (Values from dids.get_rate_centers_usa)")
-            else:
-                raise ValueError("Canada Ratecenter needs to be a str (Values from dids.get_rate_centers_can)")
-        parameters["ratecenter"] = kwargs.pop("ratecenter")
-
-    if "routing" in kwargs:
-        if not isinstance(kwargs["routing"], str):
-            raise ValueError("Main Routing for the DID needs to be an int (Values from accounts.get_routes)")
-        parameters["routing"] = kwargs.pop("routing")
-
-    if "failover_busy" in kwargs:
-        if not isinstance(kwargs["failover_busy"], str):
-            raise ValueError("Busy Routing for the DID needs to be a str")
-        parameters["failover_busy"] = kwargs.pop("failover_busy")
-
-    if "failover_unreachable" in kwargs:
-        if not isinstance(kwargs["failover_unreachable"], str):
-            raise ValueError("Unreachable Routing for the DID needs to be a str")
-        parameters["failover_unreachable"] = kwargs.pop("failover_unreachable")
-
-    if "failover_noanswer" in kwargs:
-        if not isinstance(kwargs["failover_noanswer"], str):
-            raise ValueError("NoAnswer Routing for the DID")
-        parameters["failover_noanswer"] = kwargs.pop("failover_noanswer")
-
-    if "voicemail" in kwargs:
-        if not isinstance(kwargs["voicemail"], int):
-            raise ValueError("Voicemail for the DID needs to be an int (Example: 101)")
-        parameters["voicemail"] = kwargs.pop("voicemail")
-
-    if "pop" in kwargs:
-        if not isinstance(kwargs["pop"], int):
-            raise ValueError("Point of pop for the DID needs to be an int (Example: 5)")
-        parameters["pop"] = kwargs.pop("pop")
-
-    if "dialtime" in kwargs:
-        if not isinstance(kwargs["dialtime"], int):
-            raise ValueError("Dial Time Out for the DID needs to be an int (Example: 60 -> in seconds)")
-        parameters["dialtime"] = kwargs.pop("dialtime")
-
-    if "cnam" in kwargs:
-        if not isinstance(kwargs["cnam"], bool):
-            raise ValueError("CNAM for the DID needs to be a bool (Boolean: True/False)")
-        parameters["cnam"] = convert_bool(kwargs.pop("cnam"))
-
-    if "carrier" in kwargs:
-        if not isinstance(kwargs["carrier"], int):
-            raise ValueError("Carrier for the DID needs to be a bool (Values from dids.get_carriers)")
-        parameters["carrier"] = convert_bool(kwargs.pop("carrier"))
-
-    if "callerid_prefix" in kwargs:
-        if not isinstance(kwargs["callerid_prefix"], str):
-            raise ValueError("Caller ID Prefix for the DID needs to be a str")
-        parameters["callerid_prefix"] = kwargs.pop("callerid_prefix")
-
-    if "note" in kwargs:
-        if not isinstance(kwargs["note"], str):
-            raise ValueError("Note for the DID needs to be a str")
-        parameters["note"] = kwargs.pop("note")
-
-    if "billing_type" in kwargs:
-        if not isinstance(kwargs["billing_type"], int):
-            raise ValueError("Billing type for the DID needs to be an int (1 = Per Minute, 2 = Flat)")
-        parameters["billing_type"] = kwargs.pop("billing_type")
-
-    if "account" in kwargs:
-        if not isinstance(kwargs["account"], str):
-            raise ValueError("Reseller Sub Account needs to be a str (Example: '100001_VoIP')")
-        parameters["account"] = kwargs.pop("account")
-
-    if "monthly" in kwargs:
-        if not isinstance(kwargs["monthly"], float):
-            raise ValueError("Montly Fee for Reseller Client needs to be a float (Example: 3.50)")
-        parameters["monthly"] = kwargs.pop("monthly")
-
-    if "setup" in kwargs:
-        if not isinstance(kwargs["setup"], float):
-            raise ValueError("Setup Fee for Reseller Client needs to be a float (Example: 1.99)")
-        parameters["setup"] = kwargs.pop("setup")
-
-    if "minute" in kwargs:
-        if not isinstance(kwargs["minute"], float):
-            raise ValueError("Minute Rate for Reseller Client needs to be a float (Example: 0.03)")
-        parameters["minute"] = kwargs.pop("minute")
-
-    if "test" in kwargs:
-        if not isinstance(kwargs["test"], bool):
-            raise ValueError("Test needs to be a bool (True/False)")
-        parameters["test"] = convert_bool(kwargs.pop("test"))
-
-    if len(kwargs) > 0:
+    if kwargs:
         not_allowed_parameters = ""
         for key, value in kwargs.items():
             not_allowed_parameters += key + " "
-        raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        raise VoipMsValidationError("Parameters not allowed: {}".format(not_allowed_parameters))
 
     # Verify again if all required fields present
     for field in required_fields[method]:
         if field not in parameters:
-            raise ValueError("The parameter {} is required".format(field))
+            raise VoipMsValidationError("The parameter {} is required".format(field))
 
     return method, parameters
 
@@ -538,3 +498,38 @@ ERROR_CODES = {
     "used_username": "You already have a subaccount using this Username.",
     "weak_password": "This Password is too weak or too common",
 }
+
+
+class VoipMsError(Exception):
+    """Base exception type for python-voipms errors."""
+    pass
+
+
+class VoipMsApiError(VoipMsError):
+    """Error with the upstream API.
+
+    Can be a server error, bad request, no data (which presents as
+    an error on the API).
+
+    https://voip.ms/m/apidocs.php full text search 'error code'.
+    """
+    def __init__(self, code, message):
+        super().__init__()
+        self.code = code
+        self.message = message
+
+    def __str__(self):
+        return f'{self.code}: {self.message}'
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({repr(self.code)}, {repr(self.message)})'
+
+
+class VoipMsTypeError(VoipMsError, TypeError):
+    """Wrong type on supplied argument"""
+    pass
+
+
+class VoipMsValidationError(VoipMsError, ValueError):
+    """Bad data supplied."""
+    pass

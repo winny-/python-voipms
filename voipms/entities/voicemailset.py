@@ -5,7 +5,7 @@ The Voicemail API endpoint set
 Documentation: https://voip.ms/m/apidocs.php
 """
 from voipms.baseapi import BaseApi
-from voipms.helpers import validate_email, convert_bool
+from voipms.helpers import validate_email, convert_bool, check_param, validate_yesno, VoipMsValidationError
 
 
 class VoicemailSet(BaseApi):
@@ -58,84 +58,30 @@ class VoicemailSet(BaseApi):
         """
         method = "setVoicemail"
 
-        if not isinstance(mailbox, int):
-            raise ValueError("ID for a specific Mailbox needs to be an int (Example: 1001)")
-
-        if not isinstance(name, str):
-            raise ValueError("Name for the Mailbox needs to be a str")
-
-        if not isinstance(password, int):
-            raise ValueError("Password for the Mailbox needs to be an int")
-
-        if not isinstance(skip_password, bool):
-            raise ValueError("True if Skipping Password needs to be a bool (True/False)")
-
-        if not isinstance(attach_message, str):
-            raise ValueError("Yes for Attaching WAV files to Message needs to be a str (Values: 'yes'/'no')")
-        elif attach_message not in ("yes", "no"):
-            raise ValueError("Attaching WAV files to Message only allows values: 'yes'/'no'")
-
-        if not isinstance(delete_message, str):
-            raise ValueError("Yes for Deleting Messages needs to be a str (Values: 'yes'/'no')")
-        elif delete_message not in ("yes", "no"):
-            raise ValueError("Deleting Messages only allows values: 'yes'/'no'")
-
-        if not isinstance(say_time, str):
-            raise ValueError("Yes for Saying Time Stamp needs to be a str (Values: 'yes'/'no')")
-        elif say_time not in ("yes", "no"):
-            raise ValueError("Saying Time Stamp only allows values: 'yes'/'no'")
-
-        if not isinstance(timezone, str):
-            raise ValueError("Time Zone for Mailbox needs to be a str (Values from voicemail.get_time_zones)")
-
-        if not isinstance(say_callerid, str):
-            raise ValueError("Yes for Saying the Caller ID needs to be a str (Values: 'yes'/'no')")
-        elif say_callerid not in ("yes", "no"):
-            raise ValueError("Saying the Caller ID only allows values: 'yes'/'no'")
-
-        if not isinstance(play_instructions, str):
-            raise ValueError("Code for Play Instructions Setting needs to be a str (Values from voicemail.get_play_instructions)")
-
-        if not isinstance(language, str):
-            raise ValueError("Code for Language needs to be a str (Values from general.get_languages)")
-
         parameters = {
-            "mailbox": mailbox,
-            "name": name,
-            "password": password,
-            "skip_password": convert_bool(skip_password),
-            "attach_message": attach_message,
-            "attach_message": attach_message,
-            "delete_message": delete_message,
-            "say_time": say_time,
-            "timezone": timezone,
-            "say_callerid": say_callerid,
-            "play_instructions": play_instructions,
-            "language": language,
+            "mailbox": check_param('mailbox', mailbox, int, '1001'),
+            "name": check_param('name', name, str),
+            "password": check_param('password', password, int),
+            "skip_password": check_param('skip_password', skip_password, bool, 'True/False', validator=convert_bool),
+            "attach_message": check_param('attach_message', attach_message, str, '"yes"/"no"', validator=validate_yesno),
+            "delete_message": check_param('delete_message', delete_message, str, '"yes"/"no"', validator=validate_yesno),
+            "say_time": check_param('say_time', say_time, str, '"yes"/"no"', validator=validate_yesno),
+            "timezone": check_param('timezone', timezone, str, 'See voicemail.get_time_zones'),
+            "say_callerid": check_param('say_callerid', say_callerid, str, '"yes"/"no"', validator=validate_yesno),
+            "play_instructions": check_param('play_instructions', play_instructions, str, 'See voicemail.get_play_instructions'),
+            "language": check_param('language', language, str, 'See general.get_languages'),
         }
 
         if "email" in kwargs:
-            email = kwargs.pop("email")
-            if not isinstance(email, str):
-                raise ValueError("Client's e-mail address for receiving Messages needs to be a str")
-            elif not validate_email(email):
-                raise ValueError("Client's e-mail address is not a correct email syntax")
-            parameters["email"] = email
+            parameters['email'] = check_param('email', str, kwargs.pop('email'), example='"foo@bar.com"', validator=validate_email)
 
         if "email_attachment_format" in kwargs:
-            if not isinstance(kwargs["email_attachment_format"], str):
-                raise ValueError("Code for Email Attachment format needs to be a str (Values from voicemail.get_voicemail_attachment_formats)")
-            parameters["email_attachment_format"] = kwargs.pop("email_attachment_format")
+            parameters['email_attachment_format'] = check_param('email_attachment_format', str, kwargs.pop('email_attachment_format'), example='See voicemail.get_voicemail_attachment_formats')
 
         if "unavailable_message_recording" in kwargs:
-            if not isinstance(kwargs["unavailable_message_recording"], int):
-                raise ValueError("Recording for the Unavailable Message needs to be an int (values from dids.get_recordings)")
-            parameters["unavailable_message_recording"] = kwargs.pop("unavailable_message_recording")
+            parameters["unavailable_message_recording"] = check_param("unavailable_message_recording", int, kwargs.pop("unavailable_message_recording"), 'See dids.get_recordings')
 
-        if len(kwargs) > 0:
-            not_allowed_parameters = ""
-            for key, value in kwargs.items():
-                not_allowed_parameters += key + " "
-            raise ValueError("Parameters not allowed: {}".format(not_allowed_parameters))
+        if kwargs:
+            raise VoipMsValidationError(f'Parameters not allowed: {" ".join(kwargs.keys())}')
 
         return self._voipms_client._get(method, parameters)

@@ -5,7 +5,7 @@ The Dids API endpoint get
 Documentation: https://voip.ms/m/apidocs.php
 """
 from voipms.baseapi import BaseApi
-from voipms.helpers import validate_date, convert_bool
+from voipms.helpers import validate_date, convert_bool, VoipMsTypeError
 
 
 class DidsGet(BaseApi):
@@ -476,7 +476,7 @@ class DidsGet(BaseApi):
 
         if "date_from" in kwargs:
             if not isinstance(kwargs["date_from"], str):
-                raise ValueError("Start Date for Filtering SMSs needs to be a str (Example: '2014-03-30')")
+                raise VoipMsTypeError("Start Date for Filtering SMSs needs to be a str (Example: '2014-03-30')")
             validate_date(kwargs["date_from"])
             parameters["from"] = kwargs.pop("date_from")
 

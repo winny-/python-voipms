@@ -84,6 +84,8 @@ from voipms.entities.voicemailmark import VoicemailMark
 from voipms.entities.voicemailmove import VoicemailMove
 from voipms.entities.voicemailsend import VoicemailSend
 from voipms.entities.voicemailset import VoicemailSet
+from voipms.helpers import VoipMsError, VoipMsApiError, \
+     VoipMsTypeError, VoipMsValidationError
 
 
 class VoipMs(VoipMsClient):

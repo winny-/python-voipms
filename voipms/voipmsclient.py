@@ -6,7 +6,7 @@ try:
 except ImportError:
     from urllib import urlencode
 
-from .helpers import ERROR_CODES
+from .helpers import ERROR_CODES, VoipMsApiError
 
 
 class VoipMsClient(object):
@@ -37,7 +37,7 @@ class VoipMsClient(object):
         :returns: True
         """
         if status in ERROR_CODES:
-            raise TypeError(ERROR_CODES[status])
+            raise VoipMsApiError(status, ERROR_CODES[status])
         return None
 
     def _get(self, method, parameters=None):
